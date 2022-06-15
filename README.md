@@ -36,7 +36,13 @@ Use probabilities, derived from language models to do generation, query completi
 1. ***N-Gram***
    1. use Log-Prob to solve underflow
    2. unseen words: smoothing
+   <img src="./pics/ngram.png" width="700"> 
+
 2. ***Smoothing***
+
+N-gram Example       |  Smoothing add-1
+:-------------------------:|:-------------------------:
+<img src="./pics/ngram2.png" width="500"> | <img src="./pics/ngram3.png" width="500"> 
    1. Add K
       1. Laplacian smoothing (k=1)
       2. Lidstone smoothing (k=0.1)
@@ -235,6 +241,10 @@ Unknown words problem: use rule based (A comes after B), or sub-word representat
      2. but make prediction and learning using full sentence information, compare on a sentence-level.
      3. Therefore, no error propogation
 2. ***HMM:***
+
+  <img src="./pics/HMM.png" width="700"> 
+  
+
    - want to find $P(types|sentence)$ and select highest prob.
    - $P(types|sentence) = P(sentence|types) \times P(types)$   --- Bayes rule, ignore denominator since word is fixed, we choose types.
    - $P(sentence|types) = \prod_{i=1}^{n}P(word_i|type)$ 
@@ -291,6 +301,8 @@ All problems: Limited context, can only use n-gram, a few words to generate next
 use state vector to store previous information
 $f(s_i) = f(s_{i-1}, x_{i})$ state = f(prev_state&cur_input)
 
+<img src="./pics/RNN.png" width="700"> 
+
 - Vanishing Gradient: expanding RNN gives us a very deep MLP, with even every weight in each layer is the same, so the update tends to be decreased exponentially, additionally, sigmoid function will cause problems.
   - https://towardsdatascience.com/the-vanishing-gradient-problem-69bf08b15484
 
@@ -303,6 +315,7 @@ $f(s_i) = f(s_{i-1}, x_{i})$ state = f(prev_state&cur_input)
 
 ### ***Long Short-term Memory (LSTM)***
 L8 P26 **P33**
+
  - Forget Gate: forget stuff in memory cell
  - Input Gate: how much information to put in memory cell
  - Update Memory cell using forget gate + input gate
@@ -343,6 +356,10 @@ WordNet: database of all above relations (also in NLTK). Information store as sy
 
 #### Measure similarity using WordNet
 1. ***Word Similarity***
+
+<img src="./pics/wordsim.png" width="700"> 
+<img src="./pics/wordsim2.png" width="700"> 
+
 2. Word Sense Disambiguation: select correct meaning of the word in sentence. (Less popular, the related information can be captured by contextual information.)
    - Supervised: standard ML, require context sense information as input, hard to get, otherwise context is ambiguous too.
    - Unsupervised: 
@@ -365,10 +382,15 @@ Can Learn the degree of similarity!
 describe distributional properties of a word (information of its conext words).
 Capture all sorts of semantic relations, synonym .... etc.
 
-#### 2.1*** Document as Context: The Vector Space Model ***
+#### 2.1 ***Document as Context: The Vector Space Model***
+
+  <img src="./pics/vectorspacemodel.png" width="700">
+
   - Use TF-IDF instead of frequency.
   - Dimensionality Reduction to create dense matrix:
     - ***Singular Value Decomposition*** (SVD, truncate Latent Semantic Analysis)
+
+    <img src="./pics/SVD.png" width="700"> 
 
 Or, we can use Word as Context (inside a small window, count frequency (can't use TFIDF!))
 
@@ -491,10 +513,12 @@ represent English grammars
   
 Generate sentence with CFG, Lec14 P17,18... and P20
 
-#### CYK Algorithm
+#### ***CYK Algorithm***
 dynamic programming example, like HMM
 
 check if a sentence is valid given CFG tree (Chomsky Normal Forms).
+
+<img src="./pics/cyk.png" width="700">
 
 - Chomsky Normal Form: in a form of 
   - A -> B C, A -> a (non-terminal)
@@ -544,13 +568,16 @@ Tree is Projective: No crossing edges, all its arcs are projective.
 We can construct dependency tree from constituency tree (CFG tree) by finding its head and determine the relation underlying.
 
 Two way to construct:
-  - transition based: See Notebook Transition-Based Parsing
+  - ***Transition-Based Parsing***:
     - works only with projective trees.
     - three actions: shift, left-arc or right-arc
     - remove child after right-arc or left-arc (if it is right-arc, remove right element since we find a way to go to right element.)
     - Stack: current we look at, Buffer: next input
     - example P29, P35
     ``` Parsing Classification: L16 P37```
+
+    <img src="./pics/transitionbasedparsing.png" width="700">
+
   - graph-based parsing P41
     - Adavantage:
       - produce non-projective trees (suitable for other languages)
