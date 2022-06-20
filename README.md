@@ -533,6 +533,14 @@ represent English grammars
   
 Generate sentence with CFG, Lec14 P17,18... and P20
 
+**Parse Ambiguity, Example of how to contruct rules, construct tree.** $\\$
+then, generate CNF rule  ->  then, use CYK to construct diagram.
+
+<img src="./pics/cfg1.png" width="700">
+
+
+<img src="./pics/cfg2.png" width="700">
+
 #### ***CYK Algorithm***
 dynamic programming example, like HMM
 
