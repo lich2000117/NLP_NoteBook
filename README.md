@@ -46,11 +46,11 @@ Use probabilities, derived from language models to do generation, query completi
 
 N-gram Example       
 
-<img src="./pics/ngram2.png" width="700"> 
+<img src="./pics/ngram2.jpg" width="700"> 
 
   Smoothing add-1
 
-<img src="./pics/ngram3.png" width="700"> 
+<img src="./pics/ngram3.jpg" width="700"> 
 
    1. Add K
       1. Laplacian smoothing (k=1)
