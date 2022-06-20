@@ -13,13 +13,17 @@
 4. words normalization (went->go).
    1. Goal: reduce Vocab size, map words to same type.
    2. Inflectional Morphology: "run -> runs", add s, es, ed, d, but word meaning, gramma is **NOT Changed**.
-      1. lemmatise: simple remove added part. remove 'es' etc.
+      1. lemmatise: 
+           - only remove inflectional morphology.
+           - remove added part, may change the meaning of the word, based on a lexicon (ground dictionary). So it refers to the dictionary, doesn't remove derivational morphology since two form may exist in lexicon already (writers , writes -> writer, write).
    3. Derivational Morphology: "write -> writer", add er, ise, word meaning, gramma is **Changed**.
       1. Stemming: 
+           - also removes inflectional morphology
            - remove whole suffix. "automate, automation, automatic -> automat", 
            - reduce more words, lexicon than lemmatisation. 
            - But can give non-meaningful token.
            - ***Porter Stemmer***: 1. inflectional removale 2. use rules..
+           - writers, writes -> writ
 
         <img src="./pics/porterstem.png" width="700"> 
 
@@ -40,9 +44,14 @@ Use probabilities, derived from language models to do generation, query completi
 
 2. ***Smoothing***
 
-N-gram Example       |  Smoothing add-1
-:-------------------------:|:-------------------------:
-<img src="./pics/ngram2.png" width="500"> | <img src="./pics/ngram3.png" width="500"> 
+N-gram Example       
+
+<img src="./pics/ngram2.png" width="700"> 
+
+  Smoothing add-1
+
+<img src="./pics/ngram3.png" width="700"> 
+
    1. Add K
       1. Laplacian smoothing (k=1)
       2. Lidstone smoothing (k=0.1)
@@ -71,6 +80,10 @@ N-gram Example       |  Smoothing add-1
       1. Based on Katz Backoff, but
       2. instead of using prob directly from lower N-gram model (Unigram frequency),
       3. it uses "versatility", "continuation probability" which is
+            - Continuation Count for word A (bi-gram, count previous word B, i-1):
+              1. count how many unique words (not total count!) appear before A , say 3
+              2. count how many bigrams we have (or, sum of countinuity counts for every vocab word), say 114.
+              3. countinuity probability for A is 3/114.
       4. frequency of unique words combined with target.
          - measure versatility of words, "glasses" > "Francisco".
    5. Interpolation
@@ -349,7 +362,7 @@ Polysemous: word with more than one senses (meaning).
 
 - Synonymy: similar
 - Antonymy: opposite
-- Hypernymy: catogorical is (*cat* vs *animal*, *mango* vs *fruit*)
+- Hypernymy: catogorical is (*cat* vs *animal*, *mango* vs *fruit*),  snake is one hyponym of reptile. (The opposite of hypernymy.)
 - Meronymy: part-whole (leg vs chair, wheel vs car)
 
 WordNet: database of all above relations (also in NLTK). Information store as synsets (group of word has similar sense) rather than words.
@@ -370,8 +383,9 @@ WordNet: database of all above relations (also in NLTK). Information store as sy
 
 
 ### Distributional Semantics
+Use context to understand word!
 Use topic similarity by their co-occurence.
-- Document context.Co-occurrence in the document indicating similar topic.
+- Document context. Co-occurrence in the document indicating similar topic.
 - Local context (small window), "eat a pizza" and "eat a burger", reflects meaning.
 
 #### 1. Learn meaning based on usage
@@ -395,16 +409,21 @@ Capture all sorts of semantic relations, synonym .... etc.
 Or, we can use Word as Context (inside a small window, count frequency (can't use TFIDF!))
 
 #### PMI Pointwise Mutual Information  Lect10, P17,18
+
+  <img src="./pics/pmi.png" width="700"> 
+
+- $\frac{Count(x,y)}{totalwords} = P(x,y)$, say if we have a form 
 - $Log_2(\frac{\frac{Count(x,y)}{totalwords}}{\frac{Count(x)}{totalwords}* \frac{Count(x)}{totalwords}})$  each count(a,b)/totalwords is the probability of a and b occur together in text.
 - biased towards rare word pairs, denominator small.
 - Doesn't handle zero well (goes to -inf)
+- Tell us if two words appear together, not totally by chance.
 
 PMI tricks:
 - Remove negative values to 0
 - Normalised PMI to counter bias: PMI(x,y)/(-log(P(x,y)))
 
 #### Word2Vec
-- Skip-Gram: predcit surrounding of a single word. P34
+- Skip-Gram: predict surrounding of a single word. P34
   - Slow, trying to maximise likelihood of raw text
   - solve: translate to binary problem (T or F), T: Raw Text, F: randomly draw negative samples.
 - CBOW: predict single word given its surrounding. (With in L=2 Positions, use front 2 + back 2 = Total 4 words to predict)
@@ -452,7 +471,7 @@ Unlike Word2Vec which has fixed vector, contextual word vector varies based on c
 How sentences relate to each other in a document
 - Discrouse segmentation (document divided into chunks)
 - Discourse parsing (relation between sentences)
-- Anaphora resolution (who, where, how)
+- Anaphora resolution (who, where, how, he, she (refers to previous entity))
 
 #### TextTiling: find a point to divide document to two parts P9
 get K sentences from two sides and use BOW and cosine similarity, if difference is large (threshold T), set point.
@@ -492,6 +511,7 @@ Centering Theory: unified account of relationship between discourse and entity r
 Given input of regular language (can express with regular expressions), determine their membership relations (if there are paths to connect from start to end, might need to write RE for a graph).  Lec13 P17
 - For word Morphology: use FSA to determine if the word has valid inflections (allure -> afflureful)
 
+<img src="./pics/fsa.png" width="700">
 
 ### Context-Free Grammars
 Capture non-regular languages
@@ -518,11 +538,19 @@ dynamic programming example, like HMM
 
 check if a sentence is valid given CFG tree (Chomsky Normal Forms).
 
+General Tips:
+1. Convert to CNF
+2. fill in table from bottom left
+3. fill next entry, check which entry generate two below  (x,y) check (x,n) (n,y), multiple choices.
+4. Order of non-terminal matters!
+
 <img src="./pics/cyk.png" width="700">
 
+- terminal: word
+- non-terminal: label type.
 - Chomsky Normal Form: in a form of 
-  - A -> B C, A -> a (non-terminal)
-  - Rules (how to convert to CNF):
+  - A -> B C, A -> a (terminal, word vocab)
+  - Rules (how to convert to CNF):  **B X, non-terminal Order matters!**
     1. A -> B cat
         - A -> B X
         - X -> cat
@@ -555,7 +583,7 @@ CFG Problem:
   - poor independence assumptions, can't capture contextual differences in PCFG. (differences between subj, obj, L15, P41,42) add symbol to differentiate.
   - Lack of Lexical conditioning: P44,45,46
     - For example, (dog in house) (cat)  >> (dog in) (house or cat)
-    - Solution, duplicate parent when creating tree, for example, dogx2  P 47
+    - Solution, head lexicalisatz`ion duplicate parent when creating tree, for example, dogx2  P 47
     - results in huge trees.
 
 
@@ -719,7 +747,7 @@ Sampling based algorithm to learn latent topics. Lec20 P24.
   3. For each word in orange chart, use probability distribution to sample and generate its topic.
       $P(new topic|this token) = P(topic|this token) * P(topic|doc of this token)$
         *Need to remove current token from our blue and green matrix (since we are generating (sampling) new topic for this token!)*
-  4. Repeat untill prob distribution stable. P27
+  4. Repeat untill prob distribution stable. (Calculate topic for each word, assign with highest prob on that class label, then, re count the table for word and document (step2), repeat) P27
   5. Therefore, we have stable topic for each token, and stable topic for each doc.
 
 - Prediction:
@@ -770,10 +798,14 @@ Goal:
 #### 1. Content Selection Lec21 P12
   1. TF-IDF to get important words
   2. Log Likelihood Ratio P12
+      - multiply binomial distribution and divide them together.
       - if a word prob in doc differs from prob in corpora, it is important in doc!
       - Threshold Lec21 P13
       - After getting weights for each word,
       - salient of a sentence, length S: sum(all words weights) / S. (removed stopwords)
+
+  <img src="./pics/lll.jpg" width="700">
+
   3. Sentence Centrality
     - choose sentence with small distance to all other sentences
     - use TF-IDF and Cosine similarity
